@@ -17,9 +17,7 @@
     "jsx": "react",
     "jsxFactory": "h",
     "jsxFragmentFactory": "h.Fragment",
-    "types": [
-      "@stencil/vitest/globals"
-    ]
+    "types": ["jest", "node"],
   },
   "include": [
     "src"

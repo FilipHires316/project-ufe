@@ -41,10 +41,14 @@
   "devDependencies": {
     "@stencil/core": "^4.27.1 || ^5.0.0-0",
     "@stencil/vitest": "^1.8.3",
+    "@types/jest": "^30.0.0",
     "@types/node": "^22.13.5",
     "@vitest/browser-playwright": "^4.0.0",
     "playwright": "^1.52.0",
     "vitest": "^4.0.0"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "@material/web": "^2.4.1"
+  }
 }
