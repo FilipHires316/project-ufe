@@ -1,4 +1,4 @@
-import { Component, Host, h } from '@stencil/core';
+import { Component, Event, EventEmitter,  Host, h } from '@stencil/core';
 
 @Component({
   tag: 'gregor-hires-project-evidence-list',
@@ -6,7 +6,8 @@ import { Component, Host, h } from '@stencil/core';
   shadow: true,
 })
 export class GregorHiresProjectEvidenceList {
-  evidedPatients: any[] = [];
+  @Event({ eventName: "entry-clicked"}) entryClicked: EventEmitter<string>;
+  evidedPatients: any[];
 
   private async getEvidedPatientsAsync(){
     return await Promise.resolve(
@@ -40,8 +41,8 @@ export class GregorHiresProjectEvidenceList {
     return (
       <Host>
         <md-list>
-          {this.evidedPatients.map(patient =>
-            <md-list-item>
+          {this.evidedPatients.map((patient, index) =>
+            <md-list-item onClick={ () => this.entryClicked.emit(index.toString())}>
               <div slot="headline">{patient.name}</div>
               <div slot="supporting-text">{"Predpokladaný vstup: " + patient.estimatedStart?.toLocaleString()}</div>
                 <md-icon slot="start">person</md-icon>
