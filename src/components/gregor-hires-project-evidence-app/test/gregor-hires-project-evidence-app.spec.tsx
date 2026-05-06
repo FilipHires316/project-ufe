@@ -17,9 +17,9 @@ describe('gregor-hires-project-evidence-app', () => {
 
   it('renders list', async () => {
     const page = await newSpecPage({
-      url: `http://localhost/ambulance-wl/`,
+      url: `http://localhost/project-evidence/`,
       components: [GregorHiresProjectEvidenceApp],
-      html: `<gregor-hires-project-evidence-app base-path="/ambulance-wl/"></gregor-hires-project-evidence-app>`,
+      html: `<gregor-hires-project-evidence-app base-path="/project-evidence/"></gregor-hires-project-evidence-app>`,
     });
     page.win.navigation = new EventTarget()
     const child = await page.root.shadowRoot.firstElementChild;
