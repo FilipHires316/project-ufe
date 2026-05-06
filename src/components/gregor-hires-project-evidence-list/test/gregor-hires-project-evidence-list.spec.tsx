@@ -7,12 +7,10 @@ describe('gregor-hires-project-evidence-list', () => {
       components: [GregorHiresProjectEvidenceList],
       html: `<gregor-hires-project-evidence-list></gregor-hires-project-evidence-list>`,
     });
-    expect(page.root).toEqualHtml(`
-      <gregor-hires-project-evidence-list>
-        <mock:shadow-root>
-          <slot></slot>
-        </mock:shadow-root>
-      </gregor-hires-project-evidence-list>
-    `);
+    const evidenceList = page.rootInstance as GregorHiresProjectEvidenceList;
+    const expectedPatients = evidenceList?.evidedPatients?.length
+
+    const items = page.root.shadowRoot.querySelectorAll("md-list-item");
+    expect(items.length).toEqual(expectedPatients);
   });
 });

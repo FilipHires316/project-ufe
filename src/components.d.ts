@@ -6,10 +6,34 @@
  */
 import { HTMLStencilElement, JSXBase } from "@stencil/core/internal";
 export namespace Components {
+    interface GregorHiresProjectEvidenceEditor {
+        "entryId": string;
+    }
     interface GregorHiresProjectEvidenceList {
     }
 }
+export interface GregorHiresProjectEvidenceEditorCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLGregorHiresProjectEvidenceEditorElement;
+}
 declare global {
+    interface HTMLGregorHiresProjectEvidenceEditorElementEventMap {
+        "editor-closed": string;
+    }
+    interface HTMLGregorHiresProjectEvidenceEditorElement extends Components.GregorHiresProjectEvidenceEditor, HTMLStencilElement {
+        addEventListener<K extends keyof HTMLGregorHiresProjectEvidenceEditorElementEventMap>(type: K, listener: (this: HTMLGregorHiresProjectEvidenceEditorElement, ev: GregorHiresProjectEvidenceEditorCustomEvent<HTMLGregorHiresProjectEvidenceEditorElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLGregorHiresProjectEvidenceEditorElementEventMap>(type: K, listener: (this: HTMLGregorHiresProjectEvidenceEditorElement, ev: GregorHiresProjectEvidenceEditorCustomEvent<HTMLGregorHiresProjectEvidenceEditorElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+    }
+    var HTMLGregorHiresProjectEvidenceEditorElement: {
+        prototype: HTMLGregorHiresProjectEvidenceEditorElement;
+        new (): HTMLGregorHiresProjectEvidenceEditorElement;
+    };
     interface HTMLGregorHiresProjectEvidenceListElement extends Components.GregorHiresProjectEvidenceList, HTMLStencilElement {
     }
     var HTMLGregorHiresProjectEvidenceListElement: {
@@ -17,13 +41,24 @@ declare global {
         new (): HTMLGregorHiresProjectEvidenceListElement;
     };
     interface HTMLElementTagNameMap {
+        "gregor-hires-project-evidence-editor": HTMLGregorHiresProjectEvidenceEditorElement;
         "gregor-hires-project-evidence-list": HTMLGregorHiresProjectEvidenceListElement;
     }
 }
 declare namespace LocalJSX {
+    interface GregorHiresProjectEvidenceEditor {
+        "entryId"?: string;
+        "onEditor-closed"?: (event: GregorHiresProjectEvidenceEditorCustomEvent<string>) => void;
+    }
     interface GregorHiresProjectEvidenceList {
     }
+
+    interface GregorHiresProjectEvidenceEditorAttributes {
+        "entryId": string;
+    }
+
     interface IntrinsicElements {
+        "gregor-hires-project-evidence-editor": Omit<GregorHiresProjectEvidenceEditor, keyof GregorHiresProjectEvidenceEditorAttributes> & { [K in keyof GregorHiresProjectEvidenceEditor & keyof GregorHiresProjectEvidenceEditorAttributes]?: GregorHiresProjectEvidenceEditor[K] } & { [K in keyof GregorHiresProjectEvidenceEditor & keyof GregorHiresProjectEvidenceEditorAttributes as `attr:${K}`]?: GregorHiresProjectEvidenceEditorAttributes[K] } & { [K in keyof GregorHiresProjectEvidenceEditor & keyof GregorHiresProjectEvidenceEditorAttributes as `prop:${K}`]?: GregorHiresProjectEvidenceEditor[K] };
         "gregor-hires-project-evidence-list": GregorHiresProjectEvidenceList;
     }
 }
@@ -31,6 +66,7 @@ export { LocalJSX as JSX };
 declare module "@stencil/core" {
     export namespace JSX {
         interface IntrinsicElements {
+            "gregor-hires-project-evidence-editor": LocalJSX.IntrinsicElements["gregor-hires-project-evidence-editor"] & JSXBase.HTMLAttributes<HTMLGregorHiresProjectEvidenceEditorElement>;
             "gregor-hires-project-evidence-list": LocalJSX.IntrinsicElements["gregor-hires-project-evidence-list"] & JSXBase.HTMLAttributes<HTMLGregorHiresProjectEvidenceListElement>;
         }
     }
