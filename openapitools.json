@@ -4,7 +4,7 @@
       "useDocker": true,
       "version": "6.6.0",
       "generators": {
-          "ambulance-wl": {
+          "project-evidence": {
               "generatorName": "typescript-fetch"   ,
               "glob": "api/project-evidence.openapi.yaml",
               "output": "#{cwd}/src/api/project-evidence",
