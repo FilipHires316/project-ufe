@@ -12,18 +12,18 @@ declare global {
 export class GregorHiresProjectEvidenceApp {
   @State() private relativePath = "";
 
-  @Prop() basePath: string="";
+  @Prop() basePath: string = "";
 
   componentWillLoad() {
     const baseUri = new URL(this.basePath, document.baseURI || "/").pathname;
 
     const toRelative = (path: string) => {
-      if (path.startsWith( baseUri)) {
-        this.relativePath = path.slice(baseUri.length)
+      if (path.startsWith(baseUri)) {
+        this.relativePath = path.slice(baseUri.length);
       } else {
-        this.relativePath = ""
+        this.relativePath = "";
       }
-    }
+    };
 
     window.navigation?.addEventListener("navigate", (ev: Event) => {
       if ((ev as any).canIntercept) { (ev as any).intercept(); }
@@ -31,34 +31,76 @@ export class GregorHiresProjectEvidenceApp {
       toRelative(path);
     });
 
-    toRelative(location.pathname)
+    toRelative(location.pathname);
   }
+
   render() {
-    let element = "list"
-    let entryId = "@new"
+    let element = "list";
+    let entryId = "@new";
+    let prescriptionId = "@new";
 
-    if ( this.relativePath.startsWith("entry/"))
-    {
-      element = "editor";
-      entryId = this.relativePath.split("/")[1]
-    }
+    // Path patterns:
+    //   ""                                  -> list
+    //   "entry/{id}"                        -> editor
+    //   "entry/{id}/prescriptions"          -> prescription-list
+    //   "entry/{id}/prescriptions/{rxId}"   -> prescription-editor
+    const segments = this.relativePath.split("/").filter(s => s.length > 0);
 
-    const navigate = (path:string) => {
-      const absolute = new URL(path, new URL(this.basePath, document.baseURI)).pathname;
-      window.navigation.navigate(absolute)
-    }
+    if (segments[0] === "entry" && segments.length >= 2) {
+      entryId = segments[1];
 
-    return (
-      <Host>
-        { element === "editor"
-        ? <gregor-hires-project-evidence-editor entry-id={entryId}
-            oneditor-closed={ () => navigate("./list")} >
-          </gregor-hires-project-evidence-editor>
-        : <gregor-hires-project-evidence-list
-            onentry-clicked={ (ev: CustomEvent<string>)=> navigate("./entry/" + ev.detail) } >
-          </gregor-hires-project-evidence-list>
+      if (segments[2] === "prescriptions") {
+        if (segments.length >= 4) {
+          element = "prescription-editor";
+          prescriptionId = segments[3];
+        } else {
+          element = "prescription-list";
         }
-      </Host>
-    );
+      } else {
+        element = "editor";
+      }
+    }
+
+    const navigate = (path: string) => {
+      const absolute = new URL(path, new URL(this.basePath, document.baseURI)).pathname;
+      window.navigation.navigate(absolute);
+    };
+
+    let view;
+    if (element === "editor") {
+      view = (
+        <gregor-hires-project-evidence-editor
+          entry-id={entryId}
+          oneditor-closed={() => navigate("./list")}>
+        </gregor-hires-project-evidence-editor>
+      );
+    } else if (element === "prescription-list") {
+      view = (
+        <gregor-hires-project-prescription-list
+          patient-id={entryId}
+          onentry-clicked={(ev: CustomEvent<string>) =>
+            navigate(`./entry/${entryId}/prescriptions/${ev.detail}`)}
+          onback-clicked={() => navigate("./list")}>
+        </gregor-hires-project-prescription-list>
+      );
+    } else if (element === "prescription-editor") {
+      view = (
+        <gregor-hires-project-prescription-editor
+          prescription-id={prescriptionId}
+          oneditor-closed={() => navigate(`./entry/${entryId}/prescriptions`)}>
+        </gregor-hires-project-prescription-editor>
+      );
+    } else {
+      view = (
+        <gregor-hires-project-evidence-list
+          onentry-clicked={(ev: CustomEvent<string>) =>
+            navigate(`./entry/${ev.detail}`)}
+          onprescriptions-clicked={(ev: CustomEvent<string>) =>
+            navigate(`./entry/${ev.detail}/prescriptions`)}>
+        </gregor-hires-project-evidence-list>
+      );
+    }
+
+    return <Host>{view}</Host>;
   }
 }

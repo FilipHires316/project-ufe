@@ -1,0 +1,248 @@
+:host {
+  --_rx-editor_gap: var(--evidence-gap, 0.75rem);
+  --_rx-editor_radius: 16px;
+  --_rx-editor_accent: var(--evidence-accent, #b3261e);
+  --_rx-editor_accent-soft: var(--evidence-accent-soft, #fdecea);
+  --_rx-editor_accent-dark: var(--evidence-accent-dark, #410e0b);
+
+  --md-sys-color-primary: var(--_rx-editor_accent);
+  --md-sys-color-on-primary: #ffffff;
+  --md-sys-color-primary-container: var(--_rx-editor_accent-soft);
+  --md-sys-color-on-primary-container: var(--_rx-editor_accent-dark);
+  --md-sys-color-secondary-container: var(--_rx-editor_accent-soft);
+  --md-sys-color-on-secondary-container: var(--_rx-editor_accent-dark);
+
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--_rx-editor_gap);
+  align-content: start;
+
+  max-width: 720px;
+  margin: 1rem auto;
+  padding: 1.5rem;
+  background: #fff8f7;
+  border-top: 4px solid var(--_rx-editor_accent);
+  border-radius: var(--_rx-editor_radius);
+  box-shadow:
+    0 1px 2px rgba(179, 38, 30, 0.08),
+    0 4px 16px rgba(179, 38, 30, 0.12);
+  box-sizing: border-box;
+}
+
+/* Header row with back button and title */
+.header {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(179, 38, 30, 0.1);
+  margin-bottom: 0.25rem;
+}
+
+.header-text {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.header .title {
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: var(--_rx-editor_accent);
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+.header .subtitle {
+  font-size: 0.875rem;
+  color: rgba(0, 0, 0, 0.6);
+  margin-top: 0.125rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+md-filled-text-field,
+md-filled-select {
+  width: 100%;
+  min-width: 0;
+}
+
+/* Things that span both columns */
+md-filled-text-field[type="textarea"],
+md-divider,
+.actions,
+.section-title,
+.full-width {
+  grid-column: 1 / -1;
+}
+
+.section-title {
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--_rx-editor_accent);
+  margin-top: 0.75rem;
+  margin-bottom: -0.25rem;
+  padding-left: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.section-title::before {
+  content: "";
+  width: 4px;
+  height: 16px;
+  background: var(--_rx-editor_accent);
+  border-radius: 2px;
+}
+
+/* Dosage grid: 4 slots (morning / noon / evening / night) */
+.dosage-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.dose-slot {
+  background: #ffffff;
+  border: 1px solid rgba(179, 38, 30, 0.1);
+  border-radius: 12px;
+  padding: 0.75rem 0.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.375rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.dose-slot:hover {
+  border-color: rgba(179, 38, 30, 0.25);
+  box-shadow: 0 2px 6px rgba(179, 38, 30, 0.06);
+}
+
+.dose-icon {
+  color: var(--_rx-editor_accent);
+  --md-icon-size: 22px;
+  background: var(--_rx-editor_accent-soft);
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dose-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.dose-stepper {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.dose-value {
+  min-width: 1.5rem;
+  text-align: center;
+  font-size: 1.125rem;
+  font-weight: 600;
+  font-family: 'Roboto Mono', ui-monospace, monospace;
+  color: var(--_rx-editor_accent-dark);
+}
+
+/* Summary line under dosage grid */
+.dosage-summary {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 0.875rem;
+  background: var(--_rx-editor_accent-soft);
+  border-radius: 8px;
+  font-size: 0.875rem;
+  flex-wrap: wrap;
+}
+
+.summary-label {
+  color: var(--_rx-editor_accent-dark);
+  font-weight: 500;
+}
+
+.summary-value {
+  font-family: 'Roboto Mono', ui-monospace, monospace;
+  font-weight: 600;
+  color: var(--_rx-editor_accent);
+  font-size: 1rem;
+}
+
+.dosage-summary .separator {
+  color: rgba(179, 38, 30, 0.3);
+  margin: 0 0.25rem;
+}
+
+md-divider {
+  margin: 1rem 0 0.5rem;
+  opacity: 0.5;
+}
+
+.actions {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding-top: 0.5rem;
+}
+
+.stretch-fill {
+  flex: 1 1 auto;
+}
+
+md-filled-button,
+md-outlined-button,
+md-filled-tonal-button {
+  transition: transform 0.15s ease;
+}
+
+md-filled-button:hover,
+md-outlined-button:hover,
+md-filled-tonal-button:hover {
+  transform: translateY(-1px);
+}
+
+@media (max-width: 560px) {
+  :host {
+    grid-template-columns: 1fr;
+    margin: 0.5rem;
+    padding: 1rem;
+  }
+
+  .header .title {
+    font-size: 1.25rem;
+  }
+
+  .dosage-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .actions {
+    flex-wrap: wrap;
+  }
+
+  #delete {
+    order: 3;
+    width: 100%;
+    margin-top: 0.5rem;
+  }
+
+  .stretch-fill {
+    display: none;
+  }
+}

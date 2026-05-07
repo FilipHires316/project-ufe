@@ -17,6 +17,14 @@ export namespace Components {
     }
     interface GregorHiresProjectEvidenceList {
     }
+    interface GregorHiresProjectPrescriptionEditor {
+        "patientName": string;
+        "prescriptionId": string;
+    }
+    interface GregorHiresProjectPrescriptionList {
+        "patientId": string;
+        "patientName": string;
+    }
 }
 export interface GregorHiresProjectEvidenceEditorCustomEvent<T> extends CustomEvent<T> {
     detail: T;
@@ -25,6 +33,14 @@ export interface GregorHiresProjectEvidenceEditorCustomEvent<T> extends CustomEv
 export interface GregorHiresProjectEvidenceListCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLGregorHiresProjectEvidenceListElement;
+}
+export interface GregorHiresProjectPrescriptionEditorCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLGregorHiresProjectPrescriptionEditorElement;
+}
+export interface GregorHiresProjectPrescriptionListCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLGregorHiresProjectPrescriptionListElement;
 }
 declare global {
     interface HTMLGregorHiresProjectEvidenceAppElement extends Components.GregorHiresProjectEvidenceApp, HTMLStencilElement {
@@ -52,6 +68,7 @@ declare global {
     };
     interface HTMLGregorHiresProjectEvidenceListElementEventMap {
         "entry-clicked": string;
+        "prescriptions-clicked": string;
     }
     interface HTMLGregorHiresProjectEvidenceListElement extends Components.GregorHiresProjectEvidenceList, HTMLStencilElement {
         addEventListener<K extends keyof HTMLGregorHiresProjectEvidenceListElementEventMap>(type: K, listener: (this: HTMLGregorHiresProjectEvidenceListElement, ev: GregorHiresProjectEvidenceListCustomEvent<HTMLGregorHiresProjectEvidenceListElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
@@ -67,10 +84,47 @@ declare global {
         prototype: HTMLGregorHiresProjectEvidenceListElement;
         new (): HTMLGregorHiresProjectEvidenceListElement;
     };
+    interface HTMLGregorHiresProjectPrescriptionEditorElementEventMap {
+        "editor-closed": string;
+    }
+    interface HTMLGregorHiresProjectPrescriptionEditorElement extends Components.GregorHiresProjectPrescriptionEditor, HTMLStencilElement {
+        addEventListener<K extends keyof HTMLGregorHiresProjectPrescriptionEditorElementEventMap>(type: K, listener: (this: HTMLGregorHiresProjectPrescriptionEditorElement, ev: GregorHiresProjectPrescriptionEditorCustomEvent<HTMLGregorHiresProjectPrescriptionEditorElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLGregorHiresProjectPrescriptionEditorElementEventMap>(type: K, listener: (this: HTMLGregorHiresProjectPrescriptionEditorElement, ev: GregorHiresProjectPrescriptionEditorCustomEvent<HTMLGregorHiresProjectPrescriptionEditorElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+    }
+    var HTMLGregorHiresProjectPrescriptionEditorElement: {
+        prototype: HTMLGregorHiresProjectPrescriptionEditorElement;
+        new (): HTMLGregorHiresProjectPrescriptionEditorElement;
+    };
+    interface HTMLGregorHiresProjectPrescriptionListElementEventMap {
+        "entry-clicked": string;
+        "back-clicked": void;
+    }
+    interface HTMLGregorHiresProjectPrescriptionListElement extends Components.GregorHiresProjectPrescriptionList, HTMLStencilElement {
+        addEventListener<K extends keyof HTMLGregorHiresProjectPrescriptionListElementEventMap>(type: K, listener: (this: HTMLGregorHiresProjectPrescriptionListElement, ev: GregorHiresProjectPrescriptionListCustomEvent<HTMLGregorHiresProjectPrescriptionListElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLGregorHiresProjectPrescriptionListElementEventMap>(type: K, listener: (this: HTMLGregorHiresProjectPrescriptionListElement, ev: GregorHiresProjectPrescriptionListCustomEvent<HTMLGregorHiresProjectPrescriptionListElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+    }
+    var HTMLGregorHiresProjectPrescriptionListElement: {
+        prototype: HTMLGregorHiresProjectPrescriptionListElement;
+        new (): HTMLGregorHiresProjectPrescriptionListElement;
+    };
     interface HTMLElementTagNameMap {
         "gregor-hires-project-evidence-app": HTMLGregorHiresProjectEvidenceAppElement;
         "gregor-hires-project-evidence-editor": HTMLGregorHiresProjectEvidenceEditorElement;
         "gregor-hires-project-evidence-list": HTMLGregorHiresProjectEvidenceListElement;
+        "gregor-hires-project-prescription-editor": HTMLGregorHiresProjectPrescriptionEditorElement;
+        "gregor-hires-project-prescription-list": HTMLGregorHiresProjectPrescriptionListElement;
     }
 }
 declare namespace LocalJSX {
@@ -86,6 +140,18 @@ declare namespace LocalJSX {
     }
     interface GregorHiresProjectEvidenceList {
         "onEntry-clicked"?: (event: GregorHiresProjectEvidenceListCustomEvent<string>) => void;
+        "onPrescriptions-clicked"?: (event: GregorHiresProjectEvidenceListCustomEvent<string>) => void;
+    }
+    interface GregorHiresProjectPrescriptionEditor {
+        "onEditor-closed"?: (event: GregorHiresProjectPrescriptionEditorCustomEvent<string>) => void;
+        "patientName"?: string;
+        "prescriptionId"?: string;
+    }
+    interface GregorHiresProjectPrescriptionList {
+        "onBack-clicked"?: (event: GregorHiresProjectPrescriptionListCustomEvent<void>) => void;
+        "onEntry-clicked"?: (event: GregorHiresProjectPrescriptionListCustomEvent<string>) => void;
+        "patientId"?: string;
+        "patientName"?: string;
     }
 
     interface GregorHiresProjectEvidenceAppAttributes {
@@ -94,11 +160,21 @@ declare namespace LocalJSX {
     interface GregorHiresProjectEvidenceEditorAttributes {
         "entryId": string;
     }
+    interface GregorHiresProjectPrescriptionEditorAttributes {
+        "prescriptionId": string;
+        "patientName": string;
+    }
+    interface GregorHiresProjectPrescriptionListAttributes {
+        "patientId": string;
+        "patientName": string;
+    }
 
     interface IntrinsicElements {
         "gregor-hires-project-evidence-app": Omit<GregorHiresProjectEvidenceApp, keyof GregorHiresProjectEvidenceAppAttributes> & { [K in keyof GregorHiresProjectEvidenceApp & keyof GregorHiresProjectEvidenceAppAttributes]?: GregorHiresProjectEvidenceApp[K] } & { [K in keyof GregorHiresProjectEvidenceApp & keyof GregorHiresProjectEvidenceAppAttributes as `attr:${K}`]?: GregorHiresProjectEvidenceAppAttributes[K] } & { [K in keyof GregorHiresProjectEvidenceApp & keyof GregorHiresProjectEvidenceAppAttributes as `prop:${K}`]?: GregorHiresProjectEvidenceApp[K] };
         "gregor-hires-project-evidence-editor": Omit<GregorHiresProjectEvidenceEditor, keyof GregorHiresProjectEvidenceEditorAttributes> & { [K in keyof GregorHiresProjectEvidenceEditor & keyof GregorHiresProjectEvidenceEditorAttributes]?: GregorHiresProjectEvidenceEditor[K] } & { [K in keyof GregorHiresProjectEvidenceEditor & keyof GregorHiresProjectEvidenceEditorAttributes as `attr:${K}`]?: GregorHiresProjectEvidenceEditorAttributes[K] } & { [K in keyof GregorHiresProjectEvidenceEditor & keyof GregorHiresProjectEvidenceEditorAttributes as `prop:${K}`]?: GregorHiresProjectEvidenceEditor[K] };
         "gregor-hires-project-evidence-list": GregorHiresProjectEvidenceList;
+        "gregor-hires-project-prescription-editor": Omit<GregorHiresProjectPrescriptionEditor, keyof GregorHiresProjectPrescriptionEditorAttributes> & { [K in keyof GregorHiresProjectPrescriptionEditor & keyof GregorHiresProjectPrescriptionEditorAttributes]?: GregorHiresProjectPrescriptionEditor[K] } & { [K in keyof GregorHiresProjectPrescriptionEditor & keyof GregorHiresProjectPrescriptionEditorAttributes as `attr:${K}`]?: GregorHiresProjectPrescriptionEditorAttributes[K] } & { [K in keyof GregorHiresProjectPrescriptionEditor & keyof GregorHiresProjectPrescriptionEditorAttributes as `prop:${K}`]?: GregorHiresProjectPrescriptionEditor[K] };
+        "gregor-hires-project-prescription-list": Omit<GregorHiresProjectPrescriptionList, keyof GregorHiresProjectPrescriptionListAttributes> & { [K in keyof GregorHiresProjectPrescriptionList & keyof GregorHiresProjectPrescriptionListAttributes]?: GregorHiresProjectPrescriptionList[K] } & { [K in keyof GregorHiresProjectPrescriptionList & keyof GregorHiresProjectPrescriptionListAttributes as `attr:${K}`]?: GregorHiresProjectPrescriptionListAttributes[K] } & { [K in keyof GregorHiresProjectPrescriptionList & keyof GregorHiresProjectPrescriptionListAttributes as `prop:${K}`]?: GregorHiresProjectPrescriptionList[K] };
     }
 }
 export { LocalJSX as JSX };
@@ -108,6 +184,8 @@ declare module "@stencil/core" {
             "gregor-hires-project-evidence-app": LocalJSX.IntrinsicElements["gregor-hires-project-evidence-app"] & JSXBase.HTMLAttributes<HTMLGregorHiresProjectEvidenceAppElement>;
             "gregor-hires-project-evidence-editor": LocalJSX.IntrinsicElements["gregor-hires-project-evidence-editor"] & JSXBase.HTMLAttributes<HTMLGregorHiresProjectEvidenceEditorElement>;
             "gregor-hires-project-evidence-list": LocalJSX.IntrinsicElements["gregor-hires-project-evidence-list"] & JSXBase.HTMLAttributes<HTMLGregorHiresProjectEvidenceListElement>;
+            "gregor-hires-project-prescription-editor": LocalJSX.IntrinsicElements["gregor-hires-project-prescription-editor"] & JSXBase.HTMLAttributes<HTMLGregorHiresProjectPrescriptionEditorElement>;
+            "gregor-hires-project-prescription-list": LocalJSX.IntrinsicElements["gregor-hires-project-prescription-list"] & JSXBase.HTMLAttributes<HTMLGregorHiresProjectPrescriptionListElement>;
         }
     }
 }
