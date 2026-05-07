@@ -177,4 +177,22 @@ md-list:empty::after {
     font-size: 0.75rem;
     padding: 0.125rem 0.5rem;
   }
+
+  .error-banner {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.75rem;
+    background: #fdecea;
+    color: #410e0b;
+    border: 1px solid rgba(179, 38, 30, 0.3);
+    border-radius: 8px;
+    font-size: 0.875rem;
+  }
+
+  .error-banner md-icon {
+    --md-icon-size: 20px;
+    color: var(--_evidence-list_accent);
+  }
 }

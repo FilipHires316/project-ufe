@@ -8,20 +8,61 @@ import { HTMLStencilElement, JSXBase } from "@stencil/core/internal";
 export namespace Components {
     interface GregorHiresProjectEvidenceApp {
         /**
+          * @default 'bobulova'
+         */
+        "ambulanceId": string;
+        /**
+          * @default 'http://localhost:5000/api'
+         */
+        "apiBase": string;
+        /**
           * @default ""
          */
         "basePath": string;
     }
     interface GregorHiresProjectEvidenceEditor {
+        /**
+          * @default 'bobulova'
+         */
+        "ambulanceId": string;
+        /**
+          * @default 'http://localhost:5000/api'
+         */
+        "apiBase": string;
         "entryId": string;
     }
     interface GregorHiresProjectEvidenceList {
+        /**
+          * @default 'bobulova'
+         */
+        "ambulanceId": string;
+        /**
+          * @default 'http://localhost:5000/api'
+         */
+        "apiBase": string;
     }
     interface GregorHiresProjectPrescriptionEditor {
+        /**
+          * @default 'bobulova'
+         */
+        "ambulanceId": string;
+        /**
+          * @default 'http://localhost:5000/api'
+         */
+        "apiBase": string;
+        "patientId": string;
         "patientName": string;
         "prescriptionId": string;
     }
     interface GregorHiresProjectPrescriptionList {
+        /**
+          * @default 'bobulova'
+         */
+        "ambulanceId": string;
+        /**
+          * @default 'http://localhost:5000/api'
+         */
+        "apiBase": string;
         "patientId": string;
         "patientName": string;
     }
@@ -130,24 +171,65 @@ declare global {
 declare namespace LocalJSX {
     interface GregorHiresProjectEvidenceApp {
         /**
+          * @default 'bobulova'
+         */
+        "ambulanceId"?: string;
+        /**
+          * @default 'http://localhost:5000/api'
+         */
+        "apiBase"?: string;
+        /**
           * @default ""
          */
         "basePath"?: string;
     }
     interface GregorHiresProjectEvidenceEditor {
+        /**
+          * @default 'bobulova'
+         */
+        "ambulanceId"?: string;
+        /**
+          * @default 'http://localhost:5000/api'
+         */
+        "apiBase"?: string;
         "entryId"?: string;
         "onEditor-closed"?: (event: GregorHiresProjectEvidenceEditorCustomEvent<string>) => void;
     }
     interface GregorHiresProjectEvidenceList {
+        /**
+          * @default 'bobulova'
+         */
+        "ambulanceId"?: string;
+        /**
+          * @default 'http://localhost:5000/api'
+         */
+        "apiBase"?: string;
         "onEntry-clicked"?: (event: GregorHiresProjectEvidenceListCustomEvent<string>) => void;
         "onPrescriptions-clicked"?: (event: GregorHiresProjectEvidenceListCustomEvent<string>) => void;
     }
     interface GregorHiresProjectPrescriptionEditor {
+        /**
+          * @default 'bobulova'
+         */
+        "ambulanceId"?: string;
+        /**
+          * @default 'http://localhost:5000/api'
+         */
+        "apiBase"?: string;
         "onEditor-closed"?: (event: GregorHiresProjectPrescriptionEditorCustomEvent<string>) => void;
+        "patientId"?: string;
         "patientName"?: string;
         "prescriptionId"?: string;
     }
     interface GregorHiresProjectPrescriptionList {
+        /**
+          * @default 'bobulova'
+         */
+        "ambulanceId"?: string;
+        /**
+          * @default 'http://localhost:5000/api'
+         */
+        "apiBase"?: string;
         "onBack-clicked"?: (event: GregorHiresProjectPrescriptionListCustomEvent<void>) => void;
         "onEntry-clicked"?: (event: GregorHiresProjectPrescriptionListCustomEvent<string>) => void;
         "patientId"?: string;
@@ -156,23 +238,36 @@ declare namespace LocalJSX {
 
     interface GregorHiresProjectEvidenceAppAttributes {
         "basePath": string;
+        "apiBase": string;
+        "ambulanceId": string;
     }
     interface GregorHiresProjectEvidenceEditorAttributes {
         "entryId": string;
+        "apiBase": string;
+        "ambulanceId": string;
+    }
+    interface GregorHiresProjectEvidenceListAttributes {
+        "apiBase": string;
+        "ambulanceId": string;
     }
     interface GregorHiresProjectPrescriptionEditorAttributes {
         "prescriptionId": string;
+        "patientId": string;
         "patientName": string;
+        "apiBase": string;
+        "ambulanceId": string;
     }
     interface GregorHiresProjectPrescriptionListAttributes {
         "patientId": string;
         "patientName": string;
+        "apiBase": string;
+        "ambulanceId": string;
     }
 
     interface IntrinsicElements {
         "gregor-hires-project-evidence-app": Omit<GregorHiresProjectEvidenceApp, keyof GregorHiresProjectEvidenceAppAttributes> & { [K in keyof GregorHiresProjectEvidenceApp & keyof GregorHiresProjectEvidenceAppAttributes]?: GregorHiresProjectEvidenceApp[K] } & { [K in keyof GregorHiresProjectEvidenceApp & keyof GregorHiresProjectEvidenceAppAttributes as `attr:${K}`]?: GregorHiresProjectEvidenceAppAttributes[K] } & { [K in keyof GregorHiresProjectEvidenceApp & keyof GregorHiresProjectEvidenceAppAttributes as `prop:${K}`]?: GregorHiresProjectEvidenceApp[K] };
         "gregor-hires-project-evidence-editor": Omit<GregorHiresProjectEvidenceEditor, keyof GregorHiresProjectEvidenceEditorAttributes> & { [K in keyof GregorHiresProjectEvidenceEditor & keyof GregorHiresProjectEvidenceEditorAttributes]?: GregorHiresProjectEvidenceEditor[K] } & { [K in keyof GregorHiresProjectEvidenceEditor & keyof GregorHiresProjectEvidenceEditorAttributes as `attr:${K}`]?: GregorHiresProjectEvidenceEditorAttributes[K] } & { [K in keyof GregorHiresProjectEvidenceEditor & keyof GregorHiresProjectEvidenceEditorAttributes as `prop:${K}`]?: GregorHiresProjectEvidenceEditor[K] };
-        "gregor-hires-project-evidence-list": GregorHiresProjectEvidenceList;
+        "gregor-hires-project-evidence-list": Omit<GregorHiresProjectEvidenceList, keyof GregorHiresProjectEvidenceListAttributes> & { [K in keyof GregorHiresProjectEvidenceList & keyof GregorHiresProjectEvidenceListAttributes]?: GregorHiresProjectEvidenceList[K] } & { [K in keyof GregorHiresProjectEvidenceList & keyof GregorHiresProjectEvidenceListAttributes as `attr:${K}`]?: GregorHiresProjectEvidenceListAttributes[K] } & { [K in keyof GregorHiresProjectEvidenceList & keyof GregorHiresProjectEvidenceListAttributes as `prop:${K}`]?: GregorHiresProjectEvidenceList[K] };
         "gregor-hires-project-prescription-editor": Omit<GregorHiresProjectPrescriptionEditor, keyof GregorHiresProjectPrescriptionEditorAttributes> & { [K in keyof GregorHiresProjectPrescriptionEditor & keyof GregorHiresProjectPrescriptionEditorAttributes]?: GregorHiresProjectPrescriptionEditor[K] } & { [K in keyof GregorHiresProjectPrescriptionEditor & keyof GregorHiresProjectPrescriptionEditorAttributes as `attr:${K}`]?: GregorHiresProjectPrescriptionEditorAttributes[K] } & { [K in keyof GregorHiresProjectPrescriptionEditor & keyof GregorHiresProjectPrescriptionEditorAttributes as `prop:${K}`]?: GregorHiresProjectPrescriptionEditor[K] };
         "gregor-hires-project-prescription-list": Omit<GregorHiresProjectPrescriptionList, keyof GregorHiresProjectPrescriptionListAttributes> & { [K in keyof GregorHiresProjectPrescriptionList & keyof GregorHiresProjectPrescriptionListAttributes]?: GregorHiresProjectPrescriptionList[K] } & { [K in keyof GregorHiresProjectPrescriptionList & keyof GregorHiresProjectPrescriptionListAttributes as `attr:${K}`]?: GregorHiresProjectPrescriptionListAttributes[K] } & { [K in keyof GregorHiresProjectPrescriptionList & keyof GregorHiresProjectPrescriptionListAttributes as `prop:${K}`]?: GregorHiresProjectPrescriptionList[K] };
     }

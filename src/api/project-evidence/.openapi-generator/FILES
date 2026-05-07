@@ -1,0 +1,8 @@
+apis/PatientEvidenceApi.ts
+apis/PatientPrescriptionsApi.ts
+apis/index.ts
+index.ts
+models/EvidedPatient.ts
+models/Prescription.ts
+models/index.ts
+runtime.ts

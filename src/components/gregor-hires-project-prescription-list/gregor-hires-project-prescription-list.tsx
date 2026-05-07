@@ -1,16 +1,16 @@
-import { Component, Event, EventEmitter, Host, Prop, h } from '@stencil/core';
+import { Component, Event, EventEmitter, Host, Prop, State, h } from '@stencil/core';
 
 type PrescriptionStatus = 'active' | 'dispensed' | 'expired';
 
 type Prescription = {
   id: string;
   medicineName: string;
-  strength: string;          // "500 mg", "10 mg/ml"
-  form: string;              // "tbl.", "kapsule", "sirup"
-  dosage: string;            // "1-0-1 po jedle"
-  quantity: string;          // "30 tbl.", "1 balenie"
-  prescribedDate: Date;
-  validUntil: Date;
+  strength: string;
+  form: string;
+  dosage: string;
+  quantity: string;
+  prescribedDate: string;     // ISO date YYYY-MM-DD from API
+  validUntil: string;         // ISO date YYYY-MM-DD from API
   prescribedBy: string;
   status: PrescriptionStatus;
 };
@@ -23,59 +23,44 @@ type Prescription = {
 export class GregorHiresProjectPrescriptionList {
   @Prop() patientId: string;
   @Prop() patientName: string;
+  @Prop() apiBase: string = 'http://localhost:5000/api';
+  @Prop() ambulanceId: string = 'bobulova';
 
   @Event({ eventName: "entry-clicked" }) entryClicked: EventEmitter<string>;
   @Event({ eventName: "back-clicked" }) backClicked: EventEmitter<void>;
 
-  prescriptions: Prescription[];
+  @State() private prescriptions: Prescription[] = [];
+  @State() private isLoading: boolean = false;
+  @State() private errorMessage: string = '';
 
   private async getPrescriptionsAsync(): Promise<Prescription[]> {
-    return await Promise.resolve([
-      {
-        id: 'rx-001',
-        medicineName: 'Ibalgin',
-        strength: '400 mg',
-        form: 'tbl.',
-        dosage: '1-0-1 po jedle',
-        quantity: '30 tbl.',
-        prescribedDate: new Date(2025, 9, 12),
-        validUntil: new Date(2026, 4, 12),
-        prescribedBy: 'MUDr. Anna Nováková',
-        status: 'active',
-      },
-      {
-        id: 'rx-002',
-        medicineName: 'Amoxicilín Sandoz',
-        strength: '500 mg',
-        form: 'kapsule',
-        dosage: '1-1-1 každých 8 hodín',
-        quantity: '21 kapsúl',
-        prescribedDate: new Date(2025, 8, 28),
-        validUntil: new Date(2025, 9, 28),
-        prescribedBy: 'MUDr. Anna Nováková',
-        status: 'dispensed',
-      },
-      {
-        id: 'rx-003',
-        medicineName: 'Paralen',
-        strength: '500 mg',
-        form: 'tbl.',
-        dosage: 'pri bolesti, max. 4x denne',
-        quantity: '24 tbl.',
-        prescribedDate: new Date(2025, 5, 3),
-        validUntil: new Date(2025, 10, 3),
-        prescribedBy: 'MUDr. Peter Horváth',
-        status: 'expired',
-      },
-    ]);
+    const response = await fetch(
+      `${this.apiBase}/evidence/${this.ambulanceId}/patients/${this.patientId}/prescriptions`
+    );
+    if (!response.ok) {
+      throw new Error(`Nepodarilo sa načítať predpisy (${response.status})`);
+    }
+    return await response.json();
   }
 
   async componentWillLoad() {
-    this.prescriptions = await this.getPrescriptionsAsync();
+    this.isLoading = true;
+    this.errorMessage = '';
+    try {
+      this.prescriptions = await this.getPrescriptionsAsync();
+    } catch (err) {
+      this.errorMessage = err.message ?? 'Chyba pri načítaní predpisov';
+      this.prescriptions = [];
+    } finally {
+      this.isLoading = false;
+    }
   }
 
-  private formatDate(date: Date): string {
-    return date.toLocaleDateString('sk-SK', {
+  private formatDate(date: string): string {
+    if (!date) return '—';
+    const d = new Date(date);
+    if (isNaN(d.getTime())) return '—';
+    return d.toLocaleDateString('sk-SK', {
       day: 'numeric',
       month: 'numeric',
       year: 'numeric',
@@ -87,6 +72,7 @@ export class GregorHiresProjectPrescriptionList {
       case 'active': return 'Aktívny';
       case 'dispensed': return 'Vydaný';
       case 'expired': return 'Expirovaný';
+      default: return status;
     }
   }
 
@@ -95,6 +81,7 @@ export class GregorHiresProjectPrescriptionList {
       case 'active': return 'pending_actions';
       case 'dispensed': return 'check_circle';
       case 'expired': return 'schedule';
+      default: return 'help';
     }
   }
 
@@ -102,18 +89,35 @@ export class GregorHiresProjectPrescriptionList {
     return (
       <Host>
         <div class="header">
-          <md-icon-button onClick={() => this.backClicked.emit()} aria-label="Späť">
+          <md-icon-button
+            disabled={this.isLoading}
+            onClick={() => this.backClicked.emit()}
+            aria-label="Späť">
             <md-icon>arrow_back</md-icon>
           </md-icon-button>
           <div class="header-text">
             <div class="title">Predpisy</div>
             {this.patientName && <div class="subtitle">{this.patientName}</div>}
+            <div class="subtitle">
+              {this.isLoading
+                ? 'Načítavam...'
+                : `${this.prescriptions.length} predpisov`}
+            </div>
           </div>
-          <md-filled-button onClick={() => this.entryClicked.emit('@new')}>
+          <md-filled-button
+            disabled={this.isLoading}
+            onClick={() => this.entryClicked.emit('@new')}>
             <md-icon slot="icon">add</md-icon>
             Nový predpis
           </md-filled-button>
         </div>
+
+        {this.errorMessage && (
+          <div class="error-banner">
+            <md-icon>error</md-icon>
+            <span>{this.errorMessage}</span>
+          </div>
+        )}
 
         <md-list>
           {this.prescriptions.map(rx =>

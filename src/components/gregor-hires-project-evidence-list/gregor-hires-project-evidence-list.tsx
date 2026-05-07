@@ -1,13 +1,14 @@
-import { Component, Event, EventEmitter, Host, h } from '@stencil/core';
+import { Component, Event, EventEmitter, Host, Prop, State, h } from '@stencil/core';
 
 type EvidedPatient = {
+  id: string;
   name: string;
   rodneCislo: string;
-  dateOfBirth: Date;
+  dateOfBirth: string;        // ISO date string YYYY-MM-DD from API
   gender: 'male' | 'female' | 'other';
   insurance: string;
   bloodType: string;
-  hasAllergies: boolean;
+  allergies?: string;         // free-text from API; empty/missing = no allergies
 };
 
 @Component({
@@ -16,57 +17,52 @@ type EvidedPatient = {
   shadow: true,
 })
 export class GregorHiresProjectEvidenceList {
+  @Prop() apiBase: string = 'http://localhost:5000/api';
+  @Prop() ambulanceId: string = 'bobulova';
+
   @Event({ eventName: "entry-clicked" }) entryClicked: EventEmitter<string>;
   @Event({ eventName: "prescriptions-clicked" }) prescriptionsClicked: EventEmitter<string>;
-  evidedPatients: EvidedPatient[];
+
+  @State() private evidedPatients: EvidedPatient[] = [];
+  @State() private isLoading: boolean = false;
+  @State() private errorMessage: string = '';
 
   private async getEvidedPatientsAsync(): Promise<EvidedPatient[]> {
-    return await Promise.resolve([
-      {
-        name: 'Jožko Púčik',
-        rodneCislo: '950215/1234',
-        dateOfBirth: new Date(1995, 1, 15),
-        gender: 'male',
-        insurance: 'VšZP',
-        bloodType: 'A+',
-        hasAllergies: false,
-      },
-      {
-        name: 'Bc. August Cézar',
-        rodneCislo: '780923/5678',
-        dateOfBirth: new Date(1978, 8, 23),
-        gender: 'male',
-        insurance: 'Dôvera',
-        bloodType: '0-',
-        hasAllergies: true,
-      },
-      {
-        name: 'Ing. Ferdinand Trety',
-        rodneCislo: '650304/9012',
-        dateOfBirth: new Date(1965, 2, 4),
-        gender: 'male',
-        insurance: 'Union',
-        bloodType: 'AB+',
-        hasAllergies: false,
-      },
-    ]);
+    const response = await fetch(`${this.apiBase}/evidence/${this.ambulanceId}/patients`);
+    if (!response.ok) {
+      throw new Error(`Nepodarilo sa načítať pacientov (${response.status})`);
+    }
+    return await response.json();
   }
 
   async componentWillLoad() {
-    this.evidedPatients = await this.getEvidedPatientsAsync();
+    this.isLoading = true;
+    this.errorMessage = '';
+    try {
+      this.evidedPatients = await this.getEvidedPatientsAsync();
+    } catch (err) {
+      this.errorMessage = err.message ?? 'Chyba pri načítaní pacientov';
+      this.evidedPatients = [];
+    } finally {
+      this.isLoading = false;
+    }
   }
 
-  private calculateAge(dateOfBirth: Date): number {
+  private calculateAge(dateOfBirth: string): number {
+    if (!dateOfBirth) return 0;
+    const dob = new Date(dateOfBirth);
+    if (isNaN(dob.getTime())) return 0;
+
     const today = new Date();
-    let age = today.getFullYear() - dateOfBirth.getFullYear();
-    const monthDiff = today.getMonth() - dateOfBirth.getMonth();
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dateOfBirth.getDate())) {
+    let age = today.getFullYear() - dob.getFullYear();
+    const monthDiff = today.getMonth() - dob.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
       age--;
     }
     return age;
   }
 
-  private genderIcon(gender: 'male' | 'female' | 'other'): string {
+  private genderIcon(gender: string): string {
     switch (gender) {
       case 'male': return 'man';
       case 'female': return 'woman';
@@ -74,9 +70,13 @@ export class GregorHiresProjectEvidenceList {
     }
   }
 
-  private handlePrescriptionsClick(event: MouseEvent, index: number) {
+  private hasAllergies(patient: EvidedPatient): boolean {
+    return !!patient.allergies && patient.allergies.trim().length > 0;
+  }
+
+  private handlePrescriptionsClick(event: MouseEvent, patientId: string) {
     event.stopPropagation();
-    this.prescriptionsClicked.emit(index.toString());
+    this.prescriptionsClicked.emit(patientId);
   }
 
   render() {
@@ -85,32 +85,47 @@ export class GregorHiresProjectEvidenceList {
         <div class="header">
           <div class="header-text">
             <div class="title">Zoznam evidovaných pacientov</div>
-            <div class="subtitle">{this.evidedPatients?.length ?? 0} pacientov</div>
+            <div class="subtitle">
+              {this.isLoading
+                ? 'Načítavam...'
+                : `${this.evidedPatients.length} pacientov`}
+            </div>
           </div>
-          <md-filled-button onClick={() => this.entryClicked.emit('@new')}>
+          <md-filled-button
+            disabled={this.isLoading}
+            onClick={() => this.entryClicked.emit('@new')}>
             <md-icon slot="icon">person_add</md-icon>
             Nový pacient
           </md-filled-button>
         </div>
 
+        {this.errorMessage && (
+          <div class="error-banner">
+            <md-icon>error</md-icon>
+            <span>{this.errorMessage}</span>
+          </div>
+        )}
+
         <md-list>
-          {this.evidedPatients.map((patient, index) =>
-            <md-list-item onClick={() => this.entryClicked.emit(index.toString())}>
+          {this.evidedPatients.map(patient =>
+            <md-list-item onClick={() => this.entryClicked.emit(patient.id)}>
               <md-icon slot="start">{this.genderIcon(patient.gender)}</md-icon>
               <div slot="headline">{patient.name}</div>
               <div slot="supporting-text">
                 {`${patient.rodneCislo} • ${this.calculateAge(patient.dateOfBirth)} rokov • ${patient.insurance}`}
               </div>
               <div slot="trailing-supporting-text" class="trailing">
-                {patient.hasAllergies && (
-                  <md-icon class="allergy-warning" title="Alergie">warning</md-icon>
+                {this.hasAllergies(patient) && (
+                  <md-icon class="allergy-warning" title={`Alergie: ${patient.allergies}`}>
+                    warning
+                  </md-icon>
                 )}
                 <span class="blood-type">{patient.bloodType}</span>
                 <md-icon-button
                   class="prescriptions-btn"
                   title="Predpisy"
                   aria-label={`Predpisy pacienta ${patient.name}`}
-                  onClick={(e: MouseEvent) => this.handlePrescriptionsClick(e, index)}>
+                  onClick={(e: MouseEvent) => this.handlePrescriptionsClick(e, patient.id)}>
                   <md-icon>receipt_long</md-icon>
                 </md-icon-button>
               </div>

@@ -124,4 +124,22 @@ md-filled-tonal-button:hover {
   .stretch-fill {
     display: none;
   }
+
+  .error-banner {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    background: #fdecea;
+    color: #410e0b;
+    border: 1px solid rgba(179, 38, 30, 0.3);
+    border-radius: 8px;
+    font-size: 0.875rem;
+  }
+
+  .error-banner md-icon {
+    --md-icon-size: 20px;
+    color: var(--_evidence-editor_accent);
+  }
 }

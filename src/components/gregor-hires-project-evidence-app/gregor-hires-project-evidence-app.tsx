@@ -13,6 +13,8 @@ export class GregorHiresProjectEvidenceApp {
   @State() private relativePath = "";
 
   @Prop() basePath: string = "";
+  @Prop() apiBase: string = 'http://localhost:5000/api';
+  @Prop() ambulanceId: string = 'bobulova';
 
   componentWillLoad() {
     const baseUri = new URL(this.basePath, document.baseURI || "/").pathname;
@@ -71,6 +73,8 @@ export class GregorHiresProjectEvidenceApp {
       view = (
         <gregor-hires-project-evidence-editor
           entry-id={entryId}
+          api-base={this.apiBase}
+          ambulance-id={this.ambulanceId}
           oneditor-closed={() => navigate("./list")}>
         </gregor-hires-project-evidence-editor>
       );
@@ -78,6 +82,8 @@ export class GregorHiresProjectEvidenceApp {
       view = (
         <gregor-hires-project-prescription-list
           patient-id={entryId}
+          api-base={this.apiBase}
+          ambulance-id={this.ambulanceId}
           onentry-clicked={(ev: CustomEvent<string>) =>
             navigate(`./entry/${entryId}/prescriptions/${ev.detail}`)}
           onback-clicked={() => navigate("./list")}>
@@ -87,12 +93,17 @@ export class GregorHiresProjectEvidenceApp {
       view = (
         <gregor-hires-project-prescription-editor
           prescription-id={prescriptionId}
+          patient-id={entryId}
+          api-base={this.apiBase}
+          ambulance-id={this.ambulanceId}
           oneditor-closed={() => navigate(`./entry/${entryId}/prescriptions`)}>
         </gregor-hires-project-prescription-editor>
       );
     } else {
       view = (
         <gregor-hires-project-evidence-list
+          api-base={this.apiBase}
+          ambulance-id={this.ambulanceId}
           onentry-clicked={(ev: CustomEvent<string>) =>
             navigate(`./entry/${ev.detail}`)}
           onprescriptions-clicked={(ev: CustomEvent<string>) =>
