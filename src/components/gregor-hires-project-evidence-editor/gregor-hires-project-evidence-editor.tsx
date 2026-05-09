@@ -139,10 +139,29 @@ export class GregorHiresProjectEvidenceEditor {
       });
 
       if (!response.ok) {
-        if (response.status === 409) {
-          throw new Error('Pacient s týmto rodným číslom už existuje');
+        const text = await response.text();
+        let body: any = null;
+        try { body = JSON.parse(text); } catch {}
+
+        if (body?.missing && Array.isArray(body.missing)) {
+          this.invalidFields = body.missing;
+          const labels = body.missing.map((f: string) => this.fieldLabels[f] || f).join(', ');
+          this.errorMessage = `Vyplňte povinné polia: ${labels}`;
+          return;
         }
-        throw new Error('Uloženie zlyhalo, skúste to znova');
+
+        if (response.status === 409) {
+          this.errorMessage = 'Pacient s týmto rodným číslom už existuje';
+          return;
+        }
+
+        if (body?.message) {
+          this.errorMessage = body.message;
+          return;
+        }
+
+        this.errorMessage = 'Uloženie zlyhalo, skúste to znova';
+        return;
       }
 
       this.editorClosed.emit('store');
@@ -193,7 +212,6 @@ export class GregorHiresProjectEvidenceEditor {
           label="Meno a Priezvisko"
           value={this.patient.name}
           disabled={this.isLoading}
-          class={this.isInvalid('name') ? 'invalid' : ''}
           error={this.isInvalid('name')}
           error-text={this.isInvalid('name') ? 'Povinné pole' : ''}
           onInput={(e: InputEvent) =>
@@ -205,7 +223,6 @@ export class GregorHiresProjectEvidenceEditor {
           label="Rodné číslo"
           value={this.patient.rodneCislo}
           disabled={this.isLoading}
-          class={this.isInvalid('rodneCislo') ? 'invalid' : ''}
           error={this.isInvalid('rodneCislo')}
           error-text={this.isInvalid('rodneCislo') ? 'Povinné pole' : ''}
           onInput={(e: InputEvent) =>
@@ -218,7 +235,6 @@ export class GregorHiresProjectEvidenceEditor {
           type="date"
           value={this.patient.dateOfBirth}
           disabled={this.isLoading}
-          class={this.isInvalid('dateOfBirth') ? 'invalid' : ''}
           error={this.isInvalid('dateOfBirth')}
           error-text={this.isInvalid('dateOfBirth') ? 'Povinné pole' : ''}
           onInput={(e: InputEvent) =>
@@ -230,7 +246,6 @@ export class GregorHiresProjectEvidenceEditor {
           label="Pohlavie"
           value={this.patient.gender}
           disabled={this.isLoading}
-          class={this.isInvalid('gender') ? 'invalid' : ''}
           error={this.isInvalid('gender')}
           error-text={this.isInvalid('gender') ? 'Povinné pole' : ''}
           onInput={(e: InputEvent) =>
@@ -274,7 +289,6 @@ export class GregorHiresProjectEvidenceEditor {
           label="Zdravotná poisťovňa"
           value={this.patient.insurance}
           disabled={this.isLoading}
-          class={this.isInvalid('insurance') ? 'invalid' : ''}
           error={this.isInvalid('insurance')}
           error-text={this.isInvalid('insurance') ? 'Povinné pole' : ''}
           onInput={(e: InputEvent) =>

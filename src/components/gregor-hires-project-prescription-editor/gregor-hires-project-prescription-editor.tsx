@@ -184,13 +184,34 @@ export class GregorHiresProjectPrescriptionEditor {
       });
 
       if (!response.ok) {
+        const text = await response.text();
+        let body: any = null;
+        try { body = JSON.parse(text); } catch {}
+
+        if (body?.missing && Array.isArray(body.missing)) {
+          this.invalidFields = body.missing;
+          const labels = body.missing.map((f: string) => this.fieldLabels[f] || f).join(', ');
+          this.errorMessage = `Vyplňte povinné polia: ${labels}`;
+          return;
+        }
+
         if (response.status === 409) {
-          throw new Error('Predpis s týmto ID už existuje');
+          this.errorMessage = 'Predpis s týmto ID už existuje';
+          return;
         }
+
         if (response.status === 404) {
-          throw new Error('Pacient alebo predpis sa nenašiel');
+          this.errorMessage = 'Pacient alebo predpis sa nenašiel';
+          return;
         }
-        throw new Error('Uloženie zlyhalo, skúste to znova');
+
+        if (body?.message) {
+          this.errorMessage = body.message;
+          return;
+        }
+
+        this.errorMessage = 'Uloženie zlyhalo, skúste to znova';
+        return;
       }
 
       this.editorClosed.emit('store');
