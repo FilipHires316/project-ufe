@@ -118,36 +118,63 @@ export class GregorHiresProjectPrescriptionEditor {
   }
 
   private async handleStore() {
-    this.isLoading = true;
-    this.errorMessage = '';
-    try {
-      const payload: Prescription = {
-        ...this.prescription,
-        dosage: this.dosageSummary(),
-      };
+  this.isLoading = true;
+  this.errorMessage = '';
+  try {
+    const payload: Prescription = {
+      ...this.prescription,
+      dosage: this.dosageSummary(),
+    };
 
-      const url = this.isNew()
-        ? `${this.apiBase}/evidence/${this.ambulanceId}/patients/${this.patientId}/prescriptions`
-        : `${this.apiBase}/evidence/${this.ambulanceId}/patients/${this.patientId}/prescriptions/${this.prescriptionId}`;
-      const method = this.isNew() ? 'POST' : 'PUT';
+    const url = this.isNew()
+      ? `${this.apiBase}/evidence/${this.ambulanceId}/patients/${this.patientId}/prescriptions`
+      : `${this.apiBase}/evidence/${this.ambulanceId}/patients/${this.patientId}/prescriptions/${this.prescriptionId}`;
+    const method = this.isNew() ? 'POST' : 'PUT';
 
-      const response = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
+    const response = await fetch(url, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
 
-      if (!response.ok) {
-        throw new Error(`Uloženie zlyhalo (${response.status})`);
+    if (!response.ok) {
+      const errorBody = await response.json().catch(() => null);
+
+      if (errorBody?.missing && Array.isArray(errorBody.missing)) {
+        const fieldLabels = this.translateFieldNames(errorBody.missing);
+        throw new Error(`Vyplňte povinné polia: ${fieldLabels}`);
       }
 
-      this.editorClosed.emit('store');
-    } catch (err) {
-      this.errorMessage = err.message ?? 'Chyba pri ukladaní';
-    } finally {
-      this.isLoading = false;
+      if (errorBody?.message) {
+        throw new Error(errorBody.message);
+      }
+
+      throw new Error(`Uloženie zlyhalo (${response.status})`);
     }
+
+    this.editorClosed.emit('store');
+  } catch (err) {
+    this.errorMessage = err.message ?? 'Chyba pri ukladaní';
+  } finally {
+    this.isLoading = false;
   }
+}
+
+private translateFieldNames(fields: string[]): string {
+  const translations: Record<string, string> = {
+    id: 'ID',
+    medicineName: 'Názov lieku',
+    strength: 'Sila',
+    form: 'Lieková forma',
+    dosage: 'Dávkovanie',
+    quantity: 'Množstvo',
+    prescribedDate: 'Vystavený dňa',
+    validUntil: 'Platný do',
+    prescribedBy: 'Predpísal',
+    status: 'Stav',
+  };
+  return fields.map(f => translations[f] || f).join(', ');
+}
 
   private async handleDelete() {
     if (this.isNew()) {

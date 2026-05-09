@@ -82,31 +82,56 @@ export class GregorHiresProjectEvidenceEditor {
   }
 
   private async handleStore() {
-    this.isLoading = true;
-    this.errorMessage = '';
-    try {
-      const url = this.isNew()
-        ? `${this.apiBase}/evidence/${this.ambulanceId}/patients`
-        : `${this.apiBase}/evidence/${this.ambulanceId}/patients/${this.entryId}`;
-      const method = this.isNew() ? 'POST' : 'PUT';
+  this.isLoading = true;
+  this.errorMessage = '';
+  try {
+    const url = this.isNew()
+      ? `${this.apiBase}/evidence/${this.ambulanceId}/patients`
+      : `${this.apiBase}/evidence/${this.ambulanceId}/patients/${this.entryId}`;
+    const method = this.isNew() ? 'POST' : 'PUT';
 
-      const response = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(this.patient),
-      });
+    const response = await fetch(url, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(this.patient),
+    });
 
-      if (!response.ok) {
-        throw new Error(`Uloženie zlyhalo (${response.status})`);
+    if (!response.ok) {
+      // Pokús sa získať konkrétnu chybu z odpovede servera
+      const errorBody = await response.json().catch(() => null);
+
+      if (errorBody?.missing && Array.isArray(errorBody.missing)) {
+        const fieldLabels = this.translateFieldNames(errorBody.missing);
+        throw new Error(`Vyplňte povinné polia: ${fieldLabels}`);
       }
 
-      this.editorClosed.emit('store');
-    } catch (err) {
-      this.errorMessage = err.message ?? 'Chyba pri ukladaní';
-    } finally {
-      this.isLoading = false;
+      if (errorBody?.message) {
+        throw new Error(errorBody.message);
+      }
+
+      throw new Error(`Uloženie zlyhalo (${response.status})`);
     }
+
+    this.editorClosed.emit('store');
+  } catch (err) {
+    this.errorMessage = err.message ?? 'Chyba pri ukladaní';
+  } finally {
+    this.isLoading = false;
   }
+}
+
+private translateFieldNames(fields: string[]): string {
+  const translations: Record<string, string> = {
+    id: 'ID',
+    name: 'Meno a priezvisko',
+    rodneCislo: 'Rodné číslo',
+    dateOfBirth: 'Dátum narodenia',
+    gender: 'Pohlavie',
+    insurance: 'Zdravotná poisťovňa',
+    bloodType: 'Krvná skupina',
+  };
+  return fields.map(f => translations[f] || f).join(', ');
+}
 
   private async handleDelete() {
     if (this.isNew()) {
