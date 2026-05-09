@@ -4,7 +4,7 @@ type EvidedPatient = {
   id?: string;
   name: string;
   rodneCislo: string;
-  dateOfBirth: string;        // ISO date string YYYY-MM-DD (matches <input type="date">)
+  dateOfBirth: string;
   gender: 'male' | 'female' | 'other' | '';
   address: string;
   phone: string;
@@ -32,6 +32,15 @@ export class GregorHiresProjectEvidenceEditor {
   @State() private patient: EvidedPatient = this.emptyPatient();
   @State() private isLoading: boolean = false;
   @State() private errorMessage: string = '';
+  @State() private invalidFields: string[] = [];
+
+  private fieldLabels: Record<string, string> = {
+    name: 'Meno a priezvisko',
+    rodneCislo: 'Rodné číslo',
+    dateOfBirth: 'Dátum narodenia',
+    gender: 'Pohlavie',
+    insurance: 'Zdravotná poisťovňa',
+  };
 
   private emptyPatient(): EvidedPatient {
     return {
@@ -79,59 +88,70 @@ export class GregorHiresProjectEvidenceEditor {
 
   private updateField<K extends keyof EvidedPatient>(field: K, value: EvidedPatient[K]) {
     this.patient = { ...this.patient, [field]: value };
+    if (this.invalidFields.includes(field as string)) {
+      this.invalidFields = this.invalidFields.filter(f => f !== field);
+      if (this.invalidFields.length === 0) {
+        this.errorMessage = '';
+      }
+    }
+  }
+
+  private validateRequired(): string[] {
+    const required: Array<{ key: string; value: string }> = [
+      { key: 'name', value: this.patient.name },
+      { key: 'rodneCislo', value: this.patient.rodneCislo },
+      { key: 'dateOfBirth', value: this.patient.dateOfBirth },
+      { key: 'gender', value: this.patient.gender },
+      { key: 'insurance', value: this.patient.insurance },
+    ];
+    return required
+      .filter(f => !f.value || f.value.trim() === '')
+      .map(f => f.key);
+  }
+
+  private isInvalid(field: string): boolean {
+    return this.invalidFields.includes(field);
   }
 
   private async handleStore() {
-  this.isLoading = true;
-  this.errorMessage = '';
-  try {
-    const url = this.isNew()
-      ? `${this.apiBase}/evidence/${this.ambulanceId}/patients`
-      : `${this.apiBase}/evidence/${this.ambulanceId}/patients/${this.entryId}`;
-    const method = this.isNew() ? 'POST' : 'PUT';
-
-    const response = await fetch(url, {
-      method,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(this.patient),
-    });
-
-    if (!response.ok) {
-      // Pokús sa získať konkrétnu chybu z odpovede servera
-      const errorBody = await response.json().catch(() => null);
-
-      if (errorBody?.missing && Array.isArray(errorBody.missing)) {
-        const fieldLabels = this.translateFieldNames(errorBody.missing);
-        throw new Error(`Vyplňte povinné polia: ${fieldLabels}`);
-      }
-
-      if (errorBody?.message) {
-        throw new Error(errorBody.message);
-      }
-
-      throw new Error(`Uloženie zlyhalo (${response.status})`);
+    const missing = this.validateRequired();
+    if (missing.length > 0) {
+      this.invalidFields = missing;
+      const labels = missing.map(f => this.fieldLabels[f] || f).join(', ');
+      this.errorMessage = `Vyplňte povinné polia: ${labels}`;
+      return;
     }
 
-    this.editorClosed.emit('store');
-  } catch (err) {
-    this.errorMessage = err.message ?? 'Chyba pri ukladaní';
-  } finally {
-    this.isLoading = false;
-  }
-}
+    this.invalidFields = [];
+    this.isLoading = true;
+    this.errorMessage = '';
 
-private translateFieldNames(fields: string[]): string {
-  const translations: Record<string, string> = {
-    id: 'ID',
-    name: 'Meno a priezvisko',
-    rodneCislo: 'Rodné číslo',
-    dateOfBirth: 'Dátum narodenia',
-    gender: 'Pohlavie',
-    insurance: 'Zdravotná poisťovňa',
-    bloodType: 'Krvná skupina',
-  };
-  return fields.map(f => translations[f] || f).join(', ');
-}
+    try {
+      const url = this.isNew()
+        ? `${this.apiBase}/evidence/${this.ambulanceId}/patients`
+        : `${this.apiBase}/evidence/${this.ambulanceId}/patients/${this.entryId}`;
+      const method = this.isNew() ? 'POST' : 'PUT';
+
+      const response = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(this.patient),
+      });
+
+      if (!response.ok) {
+        if (response.status === 409) {
+          throw new Error('Pacient s týmto rodným číslom už existuje');
+        }
+        throw new Error('Uloženie zlyhalo, skúste to znova');
+      }
+
+      this.editorClosed.emit('store');
+    } catch (err) {
+      this.errorMessage = err.message ?? 'Chyba pri ukladaní';
+    } finally {
+      this.isLoading = false;
+    }
+  }
 
   private async handleDelete() {
     if (this.isNew()) {
@@ -148,7 +168,7 @@ private translateFieldNames(fields: string[]): string {
       );
 
       if (!response.ok && response.status !== 204) {
-        throw new Error(`Mazanie zlyhalo (${response.status})`);
+        throw new Error('Mazanie zlyhalo, skúste to znova');
       }
 
       this.editorClosed.emit('delete');
@@ -173,6 +193,9 @@ private translateFieldNames(fields: string[]): string {
           label="Meno a Priezvisko"
           value={this.patient.name}
           disabled={this.isLoading}
+          class={this.isInvalid('name') ? 'invalid' : ''}
+          error={this.isInvalid('name')}
+          error-text={this.isInvalid('name') ? 'Povinné pole' : ''}
           onInput={(e: InputEvent) =>
             this.updateField('name', (e.target as HTMLInputElement).value)}>
           <md-icon slot="leading-icon">person</md-icon>
@@ -182,6 +205,9 @@ private translateFieldNames(fields: string[]): string {
           label="Rodné číslo"
           value={this.patient.rodneCislo}
           disabled={this.isLoading}
+          class={this.isInvalid('rodneCislo') ? 'invalid' : ''}
+          error={this.isInvalid('rodneCislo')}
+          error-text={this.isInvalid('rodneCislo') ? 'Povinné pole' : ''}
           onInput={(e: InputEvent) =>
             this.updateField('rodneCislo', (e.target as HTMLInputElement).value)}>
           <md-icon slot="leading-icon">fingerprint</md-icon>
@@ -192,6 +218,9 @@ private translateFieldNames(fields: string[]): string {
           type="date"
           value={this.patient.dateOfBirth}
           disabled={this.isLoading}
+          class={this.isInvalid('dateOfBirth') ? 'invalid' : ''}
+          error={this.isInvalid('dateOfBirth')}
+          error-text={this.isInvalid('dateOfBirth') ? 'Povinné pole' : ''}
           onInput={(e: InputEvent) =>
             this.updateField('dateOfBirth', (e.target as HTMLInputElement).value)}>
           <md-icon slot="leading-icon">cake</md-icon>
@@ -201,6 +230,9 @@ private translateFieldNames(fields: string[]): string {
           label="Pohlavie"
           value={this.patient.gender}
           disabled={this.isLoading}
+          class={this.isInvalid('gender') ? 'invalid' : ''}
+          error={this.isInvalid('gender')}
+          error-text={this.isInvalid('gender') ? 'Povinné pole' : ''}
           onInput={(e: InputEvent) =>
             this.updateField('gender', (e.target as HTMLInputElement).value as EvidedPatient['gender'])}>
           <md-icon slot="leading-icon">wc</md-icon>
@@ -242,6 +274,9 @@ private translateFieldNames(fields: string[]): string {
           label="Zdravotná poisťovňa"
           value={this.patient.insurance}
           disabled={this.isLoading}
+          class={this.isInvalid('insurance') ? 'invalid' : ''}
+          error={this.isInvalid('insurance')}
+          error-text={this.isInvalid('insurance') ? 'Povinné pole' : ''}
           onInput={(e: InputEvent) =>
             this.updateField('insurance', (e.target as HTMLInputElement).value as EvidedPatient['insurance'])}>
           <md-icon slot="leading-icon">health_and_safety</md-icon>

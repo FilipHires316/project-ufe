@@ -9,11 +9,11 @@ type Prescription = {
   medicineName: string;
   strength: string;
   form: PrescriptionForm | '';
-  dosage: string;              // e.g. "1-0-1-0"
+  dosage: string;
   instructions: string;
   quantity: string;
   atcCode: string;
-  prescribedDate: string;      // ISO date YYYY-MM-DD
+  prescribedDate: string;
   validUntil: string;
   prescribedBy: string;
   status: PrescriptionStatus;
@@ -43,6 +43,17 @@ export class GregorHiresProjectPrescriptionEditor {
   @State() private night = 0;
   @State() private isLoading: boolean = false;
   @State() private errorMessage: string = '';
+  @State() private invalidFields: string[] = [];
+
+  private fieldLabels: Record<string, string> = {
+    medicineName: 'Názov lieku',
+    strength: 'Sila',
+    form: 'Lieková forma',
+    quantity: 'Množstvo',
+    prescribedDate: 'Vystavený dňa',
+    validUntil: 'Platný do',
+    prescribedBy: 'Predpísal',
+  };
 
   private emptyPrescription(): Prescription {
     const today = new Date().toISOString().split('T')[0];
@@ -115,66 +126,80 @@ export class GregorHiresProjectPrescriptionEditor {
 
   private updateField<K extends keyof Prescription>(field: K, value: Prescription[K]) {
     this.prescription = { ...this.prescription, [field]: value };
+    if (this.invalidFields.includes(field as string)) {
+      this.invalidFields = this.invalidFields.filter(f => f !== field);
+      if (this.invalidFields.length === 0) {
+        this.errorMessage = '';
+      }
+    }
+  }
+
+  private validateRequired(): string[] {
+    const required: Array<{ key: string; value: string }> = [
+      { key: 'medicineName', value: this.prescription.medicineName },
+      { key: 'strength', value: this.prescription.strength },
+      { key: 'form', value: this.prescription.form },
+      { key: 'quantity', value: this.prescription.quantity },
+      { key: 'prescribedDate', value: this.prescription.prescribedDate },
+      { key: 'validUntil', value: this.prescription.validUntil },
+      { key: 'prescribedBy', value: this.prescription.prescribedBy },
+    ];
+    return required
+      .filter(f => !f.value || f.value.trim() === '')
+      .map(f => f.key);
+  }
+
+  private isInvalid(field: string): boolean {
+    return this.invalidFields.includes(field);
   }
 
   private async handleStore() {
-  this.isLoading = true;
-  this.errorMessage = '';
-  try {
-    const payload: Prescription = {
-      ...this.prescription,
-      dosage: this.dosageSummary(),
-    };
-
-    const url = this.isNew()
-      ? `${this.apiBase}/evidence/${this.ambulanceId}/patients/${this.patientId}/prescriptions`
-      : `${this.apiBase}/evidence/${this.ambulanceId}/patients/${this.patientId}/prescriptions/${this.prescriptionId}`;
-    const method = this.isNew() ? 'POST' : 'PUT';
-
-    const response = await fetch(url, {
-      method,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-
-    if (!response.ok) {
-      const errorBody = await response.json().catch(() => null);
-
-      if (errorBody?.missing && Array.isArray(errorBody.missing)) {
-        const fieldLabels = this.translateFieldNames(errorBody.missing);
-        throw new Error(`Vyplňte povinné polia: ${fieldLabels}`);
-      }
-
-      if (errorBody?.message) {
-        throw new Error(errorBody.message);
-      }
-
-      throw new Error(`Uloženie zlyhalo (${response.status})`);
+    const missing = this.validateRequired();
+    if (missing.length > 0) {
+      this.invalidFields = missing;
+      const labels = missing.map(f => this.fieldLabels[f] || f).join(', ');
+      this.errorMessage = `Vyplňte povinné polia: ${labels}`;
+      return;
     }
 
-    this.editorClosed.emit('store');
-  } catch (err) {
-    this.errorMessage = err.message ?? 'Chyba pri ukladaní';
-  } finally {
-    this.isLoading = false;
-  }
-}
+    this.invalidFields = [];
+    this.isLoading = true;
+    this.errorMessage = '';
 
-private translateFieldNames(fields: string[]): string {
-  const translations: Record<string, string> = {
-    id: 'ID',
-    medicineName: 'Názov lieku',
-    strength: 'Sila',
-    form: 'Lieková forma',
-    dosage: 'Dávkovanie',
-    quantity: 'Množstvo',
-    prescribedDate: 'Vystavený dňa',
-    validUntil: 'Platný do',
-    prescribedBy: 'Predpísal',
-    status: 'Stav',
-  };
-  return fields.map(f => translations[f] || f).join(', ');
-}
+    try {
+      const payload: Prescription = {
+        ...this.prescription,
+        dosage: this.dosageSummary(),
+      };
+
+      const url = this.isNew()
+        ? `${this.apiBase}/evidence/${this.ambulanceId}/patients/${this.patientId}/prescriptions`
+        : `${this.apiBase}/evidence/${this.ambulanceId}/patients/${this.patientId}/prescriptions/${this.prescriptionId}`;
+      const method = this.isNew() ? 'POST' : 'PUT';
+
+      const response = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        if (response.status === 409) {
+          throw new Error('Predpis s týmto ID už existuje');
+        }
+        if (response.status === 404) {
+          throw new Error('Pacient alebo predpis sa nenašiel');
+        }
+        throw new Error('Uloženie zlyhalo, skúste to znova');
+      }
+
+      this.editorClosed.emit('store');
+    } catch (err) {
+      this.errorMessage = err.message ?? 'Chyba pri ukladaní';
+    } finally {
+      this.isLoading = false;
+    }
+  }
 
   private async handleDelete() {
     if (this.isNew()) {
@@ -191,7 +216,7 @@ private translateFieldNames(fields: string[]): string {
       );
 
       if (!response.ok && response.status !== 204) {
-        throw new Error(`Mazanie zlyhalo (${response.status})`);
+        throw new Error('Mazanie zlyhalo, skúste to znova');
       }
 
       this.editorClosed.emit('delete');
@@ -232,6 +257,8 @@ private translateFieldNames(fields: string[]): string {
           class="full-width"
           value={this.prescription.medicineName}
           disabled={this.isLoading}
+          error={this.isInvalid('medicineName')}
+          error-text={this.isInvalid('medicineName') ? 'Povinné pole' : ''}
           onInput={(e: InputEvent) =>
             this.updateField('medicineName', (e.target as HTMLInputElement).value)}>
           <md-icon slot="leading-icon">medication</md-icon>
@@ -241,6 +268,8 @@ private translateFieldNames(fields: string[]): string {
           label="Sila (napr. 500 mg)"
           value={this.prescription.strength}
           disabled={this.isLoading}
+          error={this.isInvalid('strength')}
+          error-text={this.isInvalid('strength') ? 'Povinné pole' : ''}
           onInput={(e: InputEvent) =>
             this.updateField('strength', (e.target as HTMLInputElement).value)}>
           <md-icon slot="leading-icon">science</md-icon>
@@ -250,6 +279,8 @@ private translateFieldNames(fields: string[]): string {
           label="Lieková forma"
           value={this.prescription.form}
           disabled={this.isLoading}
+          error={this.isInvalid('form')}
+          error-text={this.isInvalid('form') ? 'Povinné pole' : ''}
           onInput={(e: InputEvent) =>
             this.updateField('form', (e.target as HTMLInputElement).value as PrescriptionForm)}>
           <md-icon slot="leading-icon">pill</md-icon>
@@ -268,6 +299,8 @@ private translateFieldNames(fields: string[]): string {
           label="Množstvo (napr. 30 tbl.)"
           value={this.prescription.quantity}
           disabled={this.isLoading}
+          error={this.isInvalid('quantity')}
+          error-text={this.isInvalid('quantity') ? 'Povinné pole' : ''}
           onInput={(e: InputEvent) =>
             this.updateField('quantity', (e.target as HTMLInputElement).value)}>
           <md-icon slot="leading-icon">inventory_2</md-icon>
@@ -370,6 +403,8 @@ private translateFieldNames(fields: string[]): string {
           type="date"
           value={this.prescription.prescribedDate}
           disabled={this.isLoading}
+          error={this.isInvalid('prescribedDate')}
+          error-text={this.isInvalid('prescribedDate') ? 'Povinné pole' : ''}
           onInput={(e: InputEvent) =>
             this.updateField('prescribedDate', (e.target as HTMLInputElement).value)}>
           <md-icon slot="leading-icon">event</md-icon>
@@ -380,9 +415,23 @@ private translateFieldNames(fields: string[]): string {
           type="date"
           value={this.prescription.validUntil}
           disabled={this.isLoading}
+          error={this.isInvalid('validUntil')}
+          error-text={this.isInvalid('validUntil') ? 'Povinné pole' : ''}
           onInput={(e: InputEvent) =>
             this.updateField('validUntil', (e.target as HTMLInputElement).value)}>
           <md-icon slot="leading-icon">event_busy</md-icon>
+        </md-filled-text-field>
+
+        <md-filled-text-field
+          label="Predpísal"
+          class="full-width"
+          value={this.prescription.prescribedBy}
+          disabled={this.isLoading}
+          error={this.isInvalid('prescribedBy')}
+          error-text={this.isInvalid('prescribedBy') ? 'Povinné pole' : ''}
+          onInput={(e: InputEvent) =>
+            this.updateField('prescribedBy', (e.target as HTMLInputElement).value)}>
+          <md-icon slot="leading-icon">person</md-icon>
         </md-filled-text-field>
 
         <md-filled-select
