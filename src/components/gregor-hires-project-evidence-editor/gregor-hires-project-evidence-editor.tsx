@@ -201,12 +201,14 @@ export class GregorHiresProjectEvidenceEditor {
   render() {
     return (
       <Host>
-        {this.errorMessage && (
-          <div class="error-banner">
-            <md-icon>error</md-icon>
-            <span>{this.errorMessage}</span>
-          </div>
-        )}
+        <div class="error-anchor">
+          {this.errorMessage && (
+            <div class="error-banner">
+              <md-icon>error</md-icon>
+              <span>{this.errorMessage}</span>
+            </div>
+          )}
+        </div>
 
         <md-filled-text-field
           label="Meno a Priezvisko"

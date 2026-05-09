@@ -264,12 +264,14 @@ export class GregorHiresProjectPrescriptionEditor {
           </div>
         </div>
 
-        {this.errorMessage && (
-          <div class="error-banner full-width">
-            <md-icon>error</md-icon>
-            <span>{this.errorMessage}</span>
-          </div>
-        )}
+        <div class="error-anchor">
+          {this.errorMessage && (
+            <div class="error-banner">
+              <md-icon>error</md-icon>
+              <span>{this.errorMessage}</span>
+            </div>
+          )}
+        </div>
 
         <div class="section-title">Liek</div>
 
