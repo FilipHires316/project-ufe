@@ -20,8 +20,9 @@ export class GregorHiresProjectEvidenceApp {
     const baseUri = new URL(this.basePath, document.baseURI || "/").pathname;
 
     const toRelative = (path: string) => {
-      if (path.startsWith(baseUri)) {
-        this.relativePath = path.slice(baseUri.length);
+      const idx = path.indexOf(baseUri);
+      if (idx >= 0) {
+        this.relativePath = path.slice(idx + baseUri.length);
       } else {
         this.relativePath = "";
       }
@@ -41,11 +42,6 @@ export class GregorHiresProjectEvidenceApp {
     let entryId = "@new";
     let prescriptionId = "@new";
 
-    // Path patterns:
-    //   ""                                  -> list
-    //   "entry/{id}"                        -> editor
-    //   "entry/{id}/prescriptions"          -> prescription-list
-    //   "entry/{id}/prescriptions/{rxId}"   -> prescription-editor
     const segments = this.relativePath.split("/").filter(s => s.length > 0);
 
     if (segments[0] === "entry" && segments.length >= 2) {
@@ -64,7 +60,12 @@ export class GregorHiresProjectEvidenceApp {
     }
 
     const navigate = (path: string) => {
-      const absolute = new URL(path, new URL(this.basePath, document.baseURI)).pathname;
+      const baseUri = new URL(this.basePath, document.baseURI || "/").pathname;
+      const currentPath = location.pathname;
+      const prefixIndex = currentPath.indexOf(baseUri);
+      const prefix = prefixIndex >= 0 ? currentPath.substring(0, prefixIndex) : '';
+      const cleanPath = path.startsWith('./') ? path.substring(2) : path;
+      const absolute = prefix + baseUri + cleanPath;
       window.navigation.navigate(absolute);
     };
 
